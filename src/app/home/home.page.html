@@ -1,0 +1,57 @@
+<ion-content class="content">
+  
+  <div class="title-container">
+    <h1 class="title">Pomodoro Timer</h1>
+  </div>
+
+  <div class="timer-display-container">
+    <div class="circle-progress">
+      <svg class="progress-ring" width="220" height="220">
+        <circle class="progress-ring__background" cx="110" cy="110" r="100"/>
+        <circle class="progress-ring__circle" cx="110" cy="110" r="100"/>
+      </svg>
+      <div class="timer-text">
+        <div class="current-time">{{ currentTime }}</div>
+        <div class="timer">{{ timerDisplay }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="action-container">
+    <ion-item>
+      <ion-label>Pomodoro Duration</ion-label>
+      <ion-select [(ngModel)]="pomodoroMinutes" interface="popover">
+        <ion-select-option *ngFor="let min of durationOptions" [value]="min">{{ min }} min</ion-select-option>
+      </ion-select>
+      <ion-select [(ngModel)]="pomodoroSeconds" interface="popover">
+        <ion-select-option *ngFor="let sec of secondsOptions" [value]="sec">{{ sec }} sec</ion-select-option>
+      </ion-select>
+    </ion-item>
+    
+    <ion-item>
+      <ion-label>Break Duration</ion-label>
+      <ion-select [(ngModel)]="breakMinutes" interface="popover">
+        <ion-select-option *ngFor="let min of breakOptions" [value]="min">{{ min }} min</ion-select-option>
+      </ion-select>
+      <ion-select [(ngModel)]="breakSeconds" interface="popover">
+        <ion-select-option *ngFor="let sec of secondsOptions" [value]="sec">{{ sec }} sec</ion-select-option>
+      </ion-select>
+    </ion-item>
+    
+  
+    <ion-button expand="block" size="large" (click)="startPomodoro()" [disabled]="isRunning">
+      Start Pomodoro
+    </ion-button>
+  
+    <ion-button expand="block" size="large" color="warning" (click)="togglePause()" [disabled]="!isRunning">
+      {{ isPaused ? 'Resume' : 'Pause' }}
+    </ion-button>
+
+  
+    <ion-button expand="block" size="large" color="danger" (click)="resetTimer()">
+      Reset
+    </ion-button>
+  </div>
+  
+
+</ion-content>

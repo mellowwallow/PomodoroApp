@@ -1,0 +1,96 @@
+.content {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: linear-gradient(145deg, #f4f7fa, #ffffff);
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.title-container {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #3a3a3a;
+}
+
+.timer-display-container {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.circle-progress {
+  position: relative;
+  width: 220px;
+  height: 220px;
+}
+
+.progress-ring {
+  transform: rotate(-90deg);
+}
+
+.progress-ring__background {
+  fill: transparent;
+  stroke: #e6e6e6;
+  stroke-width: 12;
+}
+
+.progress-ring__circle {
+  fill: transparent;
+  stroke: #ff6f61;
+  stroke-width: 12;
+  stroke-linecap: round;
+  stroke-dasharray: 628;
+  stroke-dashoffset: 628;
+  transition: stroke-dashoffset 0.5s linear;
+}
+
+.timer-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.current-time {
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: #6c6c6c;
+}
+
+.timer {
+  font-size: 2.8rem;
+  font-weight: 700;
+  color: #333;
+  margin-top: 5px;
+}
+
+.action-container {
+  margin-top: 30px;
+  text-align: center;
+}
+
+ion-button {
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 1.2rem;
+  padding: 12px 20px;
+  transition: transform 0.2s ease-in-out;
+}
+
+ion-button[disabled] {
+  opacity: 0.5;
+}
+
+ion-button:hover {
+  transform: scale(1.05);
+}
+
