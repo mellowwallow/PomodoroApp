@@ -1,5 +1,4 @@
 <ion-content class="content">
-  
   <div class="title-container">
     <h1 class="title">Pomodoro Timer</h1>
   </div>
@@ -38,7 +37,6 @@
       </ion-select>
     </ion-item>
     
-  
     <ion-button expand="block" size="large" (click)="startPomodoro()" [disabled]="isRunning">
       Start Pomodoro
     </ion-button>
@@ -47,11 +45,8 @@
       {{ isPaused ? 'Resume' : 'Pause' }}
     </ion-button>
 
-  
     <ion-button expand="block" size="large" color="danger" (click)="resetTimer()">
       Reset
     </ion-button>
   </div>
-  
-
 </ion-content>

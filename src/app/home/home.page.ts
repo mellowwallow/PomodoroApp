@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { LocalNotifications, LocalNotificationSchema } from '@capacitor/local-notifications';
 
 @Component({
   selector: 'app-home',
@@ -32,53 +31,38 @@ export class HomePage implements OnInit {
   endCallback: Function | null = null;
 
   ngOnInit() {
-    this.initNotifications();
+    this.requestNotificationPermission();
     setInterval(() => {
       this.currentTime = new Date().toLocaleTimeString();
     }, 1000);
   }
 
-  // Initialize local notifications and create the notification channel
-  async initNotifications() {
-    const permission = await LocalNotifications.requestPermissions();
-    if (permission.display !== 'granted') {
-      console.warn('Notification permission not granted');
-    } else {
-      console.log('Notification permission granted');
+  // Request permission to show notifications
+  async requestNotificationPermission() {
+    if (Notification.permission !== 'granted') {
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') {
+        console.warn('Notification permission not granted');
+      }
     }
-
-    // Create notification channel with unique channelId
-    await LocalNotifications.createChannel({
-      id: 'pomodoro-channel',
-      name: 'Pomodoro Notifications',
-      description: 'Channel for Pomodoro alerts with sound',
-      sound: 'beep.mp3', // Custom sound for notifications
-      importance: 5, // High importance
-      vibration: true,
-      visibility: 1,
-    });
-
-    LocalNotifications.addListener('localNotificationReceived', (notification) => {
-      console.log('Notification received:', notification);
-    });
   }
 
-  // Send a notification
+  // Show a browser notification
   notify(message: string) {
-    const notif: LocalNotificationSchema = {
-      title: 'Pomodoro Timer',
-      body: message,
-      id: Date.now(),
-      sound: 'beep.mp3', // Sound file for notification
-      channelId: 'pomodoro-channel', // Reference to the created notification channel
-    };
+    if (Notification.permission === 'granted') {
+      const notification = new Notification('Pomodoro Timer', {
+        body: message,
+        icon: 'assets/icon/favicon.png', // Optional: Set a custom icon
+      });
 
-    // Schedule notification
-    LocalNotifications.schedule({ notifications: [notif] }).then(() => {
-      console.log('Notification scheduled:', message);
-    }).catch((err) => {
-      console.error('Notification failed:', err);
-    });
+      // Play the sound manually
+      const audio = new Audio('assets/sounds/beep.mp3');
+      audio.play().catch(err => {
+        console.error('Error playing sound:', err);
+      });
+    } else {
+      console.warn('Notification permission not granted');
+    }
   }
 
   // Start the Pomodoro timer
@@ -88,16 +72,18 @@ export class HomePage implements OnInit {
     this.isRunning = true;
     this.isPaused = false;
     this.timerDuration = this.pomodoroMinutes * 60 + this.pomodoroSeconds;
-    console.log('Pomodoro started with duration:', this.timerDuration);
     this.startTimer(this.timerDuration, () => {
       this.notify('Pomodoro Done! Time for a break.');
-      this.startBreak();
+
+      // Delay break start by 5 seconds
+      setTimeout(() => {
+        this.startBreak();
+      }, 5000);  // 5-second delay before starting the break
     });
   }
 
   // Start the break timer
   startBreak() {
-    console.log('Starting break with duration:', this.breakMinutes * 60 + this.breakSeconds);
     this.timerDuration = this.breakMinutes * 60 + this.breakSeconds;
     this.isPaused = false;
     this.startTimer(this.timerDuration, () => {
@@ -108,7 +94,7 @@ export class HomePage implements OnInit {
     });
   }
 
-  // Start the countdown timer and update the UI
+  // Start the timer and handle progress
   startTimer(duration: number, callback: Function) {
     this.timeLeft = duration;
     this.endCallback = callback;
@@ -131,14 +117,14 @@ export class HomePage implements OnInit {
     }, 1000);
   }
 
-  // Update the displayed timer text (MM:SS format)
+  // Update the displayed time
   updateDisplay(seconds: number) {
     const min = Math.floor(seconds / 60).toString().padStart(2, '0');
     const sec = (seconds % 60).toString().padStart(2, '0');
     this.timerDisplay = `${min}:${sec}`;
   }
 
-  // Update the circular progress UI element based on the timer progress
+  // Update the progress circle (UI)
   updateCircle(progress: number) {
     const circle = document.querySelector('.progress-ring__circle') as SVGCircleElement;
     if (!circle) return;
@@ -150,7 +136,7 @@ export class HomePage implements OnInit {
     circle.style.strokeDashoffset = offset.toString();
   }
 
-  // Toggle the pause/resume state of the timer
+  // Toggle pause/resume on the timer
   togglePause() {
     if (!this.isRunning) return;
 
@@ -163,7 +149,7 @@ export class HomePage implements OnInit {
     }
   }
 
-  // Reset the timer to initial state
+  // Reset the timer
   resetTimer() {
     clearInterval(this.interval);
     this.timerDisplay = '';

@@ -6,12 +6,11 @@ const config: CapacitorConfig = {
   webDir: 'www',
   plugins: {
     LocalNotifications: {
-      smallIcon: "ic_stat_icon_config_sample",
-      iconColor: "#488AFF",
-      sound: "beep.mp3"
+      sound: 'beep.mp3',
+      smallIcon: 'ic_stat_icon_config_sample',
+      iconColor: '#488AFF',
     }
   }
-  
 };
 
 export default config;
