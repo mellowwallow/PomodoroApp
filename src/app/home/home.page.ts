@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { LocalNotifications, LocalNotificationSchema } from '@capacitor/local-notifications';
 
 @Component({
   selector: 'app-home',
@@ -31,41 +32,60 @@ export class HomePage implements OnInit {
   endCallback: Function | null = null;
 
   ngOnInit() {
-    this.requestNotificationPermission();
+    this.initNotifications();
     setInterval(() => {
       this.currentTime = new Date().toLocaleTimeString();
     }, 1000);
   }
 
-  // Request permission to show notifications
-  async requestNotificationPermission() {
-    if (Notification.permission !== 'granted') {
-      const permission = await Notification.requestPermission();
-      if (permission !== 'granted') {
-        console.warn('Notification permission not granted');
-      }
-    }
-  }
-
-  // Show a browser notification
-  notify(message: string) {
-    if (Notification.permission === 'granted') {
-      const notification = new Notification('Pomodoro Timer', {
-        body: message,
-        icon: 'assets/icon/favicon.png', // Optional: Set a custom icon
-      });
-
-      // Play the sound manually
-      const audio = new Audio('assets/sounds/beep.mp3');
-      audio.play().catch(err => {
-        console.error('Error playing sound:', err);
-      });
-    } else {
+  async initNotifications() {
+    const permission = await LocalNotifications.requestPermissions();
+    if (permission.display !== 'granted') {
       console.warn('Notification permission not granted');
+      return;
     }
+
+    console.log('Notification permission granted');
+
+    try {
+      await LocalNotifications.createChannel({
+        id: 'pomodoro-channel',
+        name: 'Pomodoro Notifications',
+        description: 'Pomodoro Alerts',
+        importance: 5,
+        sound: 'beep.mp3',
+        visibility: 1,
+      });
+    } catch (err) {
+      console.warn('Channel may already exist:', err);
+    }
+
+    LocalNotifications.addListener('localNotificationReceived', (notification) => {
+      console.log('Notification received:', notification);
+    });
   }
 
-  // Start the Pomodoro timer
+  notify(message: string) {
+    const notification: LocalNotificationSchema = {
+      title: 'Pomodoro Timer',
+      body: message,
+      id: Date.now(),
+      schedule: {
+        at: new Date(Date.now() + 1000),
+      },
+      sound: 'beep.mp3',
+      channelId: 'pomodoro-channel',
+    };
+
+    LocalNotifications.schedule({
+      notifications: [notification]
+    }).then(() => {
+      console.log('Notification scheduled:', message);
+    }).catch(err => {
+      console.error('Notification failed:', err);
+    });
+  }
+
   startPomodoro() {
     if (this.isRunning) return;
 
@@ -75,14 +95,12 @@ export class HomePage implements OnInit {
     this.startTimer(this.timerDuration, () => {
       this.notify('Pomodoro Done! Time for a break.');
 
-      // Delay break start by 5 seconds
       setTimeout(() => {
         this.startBreak();
-      }, 5000);  // 5-second delay before starting the break
+      }, 5000);
     });
   }
 
-  // Start the break timer
   startBreak() {
     this.timerDuration = this.breakMinutes * 60 + this.breakSeconds;
     this.isPaused = false;
@@ -94,7 +112,6 @@ export class HomePage implements OnInit {
     });
   }
 
-  // Start the timer and handle progress
   startTimer(duration: number, callback: Function) {
     this.timeLeft = duration;
     this.endCallback = callback;
@@ -117,14 +134,12 @@ export class HomePage implements OnInit {
     }, 1000);
   }
 
-  // Update the displayed time
   updateDisplay(seconds: number) {
     const min = Math.floor(seconds / 60).toString().padStart(2, '0');
     const sec = (seconds % 60).toString().padStart(2, '0');
     this.timerDisplay = `${min}:${sec}`;
   }
 
-  // Update the progress circle (UI)
   updateCircle(progress: number) {
     const circle = document.querySelector('.progress-ring__circle') as SVGCircleElement;
     if (!circle) return;
@@ -136,7 +151,6 @@ export class HomePage implements OnInit {
     circle.style.strokeDashoffset = offset.toString();
   }
 
-  // Toggle pause/resume on the timer
   togglePause() {
     if (!this.isRunning) return;
 
@@ -149,7 +163,6 @@ export class HomePage implements OnInit {
     }
   }
 
-  // Reset the timer
   resetTimer() {
     clearInterval(this.interval);
     this.timerDisplay = '';
